@@ -159,9 +159,11 @@
             angle += 0.02;
             const modelMatrix = glMatrix.mat4.create();
             //绕z轴旋转
-            glMatrix.mat4.rotateZ(modelMatrix,modelMatrix,angle);
+            //glMatrix.mat4.rotateZ(modelMatrix,modelMatrix,angle);
+            glMatrix.mat4.scale(modelMatrix,modelMatrix,[0.5,0.5,1.0]);
+            glMatrix.mat4.translate(modelMatrix,modelMatrix,[0.0,0.0,0.5]);
             //绕y轴旋转
-            //glMatrix.mat4.rotateY(modelMatrix,modelMatrix,angle);
+            glMatrix.mat4.rotateY(modelMatrix,modelMatrix,angle);
             //glMatrix.mat4.rotateX(modelMatrix,modelMatrix,angle);
             device.queue.writeBuffer(mat4Buf,0,modelMatrix);
 
@@ -184,7 +186,7 @@
             renderPass.setVertexBuffer(0, vertexBuf);
 
             renderPass.setBindGroup(0, bindGroup);
-            renderPass.draw(6);//需要绘制多少个三角形，不能大于顶点数据/3
+            renderPass.draw(18);//需要绘制多少个顶点，不能大于顶点数据/3
             renderPass.end();
             //通过finish生成一堆gpu指令
             const commandBuf = commandEncoder.finish();
