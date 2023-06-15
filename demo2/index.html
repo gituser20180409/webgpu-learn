@@ -6,6 +6,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <style>
+    </style>
 </head>
 
 <body>
@@ -58,7 +60,7 @@
         //再缩放
         glMatrix.mat4.scale(mat4Arr, mat4Arr, [0.5, 0.5, 0]);
         //然后旋转
-        glMatrix.mat4.rotateZ(mat4Arr, mat4Arr, Math.PI/12);
+        glMatrix.mat4.rotateZ(mat4Arr, mat4Arr, Math.PI / 12);
 
         //创建uniform缓冲区
         const mat4Buf = device.createBuffer({
@@ -133,20 +135,20 @@
         let angle = 0.0;//旋转角度
         //渲染，动画
         function render() {
-            angle += 0.02;
+            angle += 0.1;
             const modelMatrix = glMatrix.mat4.create();
             //绕z轴旋转
             //glMatrix.mat4.rotateZ(modelMatrix,modelMatrix,angle);
             //glMatrix.mat4.scale(modelMatrix,modelMatrix,[0.5,0.5,1.0]);
-            glMatrix.mat4.translate(modelMatrix,modelMatrix,[0.0,0.0,0.5]);
+            glMatrix.mat4.translate(modelMatrix, modelMatrix, [0.0, 0.0, 0.5]);
             //绕y轴旋转
-            glMatrix.mat4.rotateY(modelMatrix,modelMatrix,angle);
-            glMatrix.mat4.rotateX(modelMatrix,modelMatrix,angle);
-            device.queue.writeBuffer(mat4Buf,0,modelMatrix);
+            //glMatrix.mat4.rotateY(modelMatrix,modelMatrix,angle);
+            //glMatrix.mat4.rotateX(modelMatrix,modelMatrix,-angle);
+            device.queue.writeBuffer(mat4Buf, 0, modelMatrix);
 
             //创建命令编码器控制渲染管线输出像素数据
             const commandEncoder = device.createCommandEncoder();
-            
+
             const renderPass = commandEncoder.beginRenderPass({
                 //渲染通道
                 colorAttachments: [

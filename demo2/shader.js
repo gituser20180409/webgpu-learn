@@ -41,10 +41,12 @@ const fragment = /* wgsl */`
         //uniform数据即使没有用到也要在着色器代码里读出来，否则报错
         var c = color;
         var retColor = vec4<f32>(x/500.0,1.0,y/500.0,1.0);
-        if(x < 370.0){//屏幕x坐标
-            return vec4<f32>(1.0,1.0,0.0,1.0);
-        }
-        return vec4<f32>(0.0,1.0,1.0,1.0);
+        var per:f32 = (x - 250.0)/250.0;
+        // if(x < 370.0){//屏幕x坐标小于375时设置为黄色，否则设置成天蓝
+        //     return vec4<f32>(1.0,1.0,0.0,1.0);
+        // }
+        // return vec4<f32>(0.0,1.0,1.0,1.0);
+        return vec4<f32>(per,1.0,1.0-per,1.0);//渐变色
     }
 `;
 export {
