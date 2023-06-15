@@ -32,45 +32,6 @@
             0.0, 0.0, 0.0,//正面
             1.0, 0.0, 0.0,
             0.0, 1.0, 0.0,
-
-            0.0, 0.0, 0.0,//左侧1
-            0.0, 0.0, 1.0,
-            0.0, 1.0, 0.0,
-
-            0.0, 1.0, 0.0,//左侧2
-            0.0, 1.0, 1.0,
-            0.0, 0.0, 1.0,
-
-            0.0, 0.0, 0.0,//下侧1
-            1.0, 0.0, 0.0,
-            0.0, 0.0, 1.0,
-
-            0.0, 0.0, 1.0,//下侧2
-            1.0, 0.0, 1.0,
-            1.0, 0.0, 0.0,
-
-            0.0, 0.0, 1.0,//背面
-            1.0, 0.0, 1.0,
-            0.0, 1.0, 1.0,
-
-            0.0, 1.0, 0.0,//右侧1
-            1.0, 0.0, 0.0,
-            1.0, 0.0, 1.0,
-
-            1.0, 0.0, 1.0,//右侧2
-            0.0, 1.0, 0.0,
-            0.0, 1.0, 1.0,
-
-            0.0, 0.0, 0.0,//底面1
-            0.0, 0.0, 1.0,
-            1.0, 0.0, 0.0,
-
-            1.0, 0.0, 0.0,//底面2
-            1.0, 0.0, 1.0,
-            0.0, 0.0, 1.0,
-            // 0.0,1.0,0.0,
-            // 1.0,1.0,0.0,
-            // 1.0,0.0,0.0
         ]);
         //创建顶点缓冲区，存放顶点数据
         const vertexBuf = device.createBuffer({
@@ -176,7 +137,7 @@
             const modelMatrix = glMatrix.mat4.create();
             //绕z轴旋转
             //glMatrix.mat4.rotateZ(modelMatrix,modelMatrix,angle);
-            glMatrix.mat4.scale(modelMatrix,modelMatrix,[0.5,0.5,1.0]);
+            //glMatrix.mat4.scale(modelMatrix,modelMatrix,[0.5,0.5,1.0]);
             glMatrix.mat4.translate(modelMatrix,modelMatrix,[0.0,0.0,0.5]);
             //绕y轴旋转
             glMatrix.mat4.rotateY(modelMatrix,modelMatrix,angle);
@@ -202,7 +163,7 @@
             renderPass.setVertexBuffer(0, vertexBuf);
 
             renderPass.setBindGroup(0, bindGroup);
-            renderPass.draw(30);//需要绘制多少个顶点，不能大于顶点数据/3
+            renderPass.draw(3);//需要绘制多少个顶点，不能大于顶点数据/3
             renderPass.end();
             //通过finish生成一堆gpu指令
             const commandBuf = commandEncoder.finish();
