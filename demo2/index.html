@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <canvas id="gpu" width="500" height="500" style="background-color: aqua;"></canvas>
+    <script type="module">
+        import * as glMatrix from "./../glMatrix/esm/index.js";
+
+        import { vertex, fragment } from "./shader.js";
+        const adapter = await navigator.gpu.requestAdapter();
+        const device = await adapter.requestDevice();
+        console.log(device);
+        const canvas = document.getElementById("gpu");
+        const context = canvas.getContext('webgpu');
+        const format = navigator.gpu.getPreferredCanvasFormat();
+        context.configure({
+            device,
+            format
+        });
+        //创建平移矩阵
+        const mat4 = glMatrix.mat4.fromValues(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+        console.log(mat4);
+        //设置顶点
+        const vertexArr = new Float32Array([
+            0.0, 0.0, 0.0,//正面
+            1.0, 0.0, 0.0,
+            0.0, 1.0, 0.0,
+
+            0.0, 0.0, 0.0,//左侧1
+            0.0, 0.0, 1.0,
+            0.0, 1.0, 0.0,
+
+            0.0, 1.0, 0.0,//左侧2
+            0.0, 1.0, 1.0,
+            0.0, 0.0, 1.0,
+
+            0.0, 0.0, 0.0,//下侧1
+            1.0, 0.0, 0.0,
+            0.0, 0.0, 1.0,
+
+            0.0, 0.0, 1.0,//下侧2
+            1.0, 0.0, 1.0,
+            1.0, 0.0, 0.0,
+
+            0.0, 0.0, 1.0,//背面
+            1.0, 0.0, 1.0,
+            0.0, 1.0, 1.0,
+
+            0.0, 1.0, 0.0,//右侧1
+            1.0, 0.0, 0.0,
+            1.0, 0.0, 1.0,
+
+            1.0, 0.0, 1.0,//右侧2
+            0.0, 1.0, 0.0,
+            0.0, 1.0, 1.0,
+
+            0.0, 0.0, 0.0,//底面1
+            0.0, 0.0, 1.0,
+            1.0, 0.0, 0.0,
+
+            1.0, 0.0, 0.0,//底面2
+            1.0, 0.0, 1.0,
+            0.0, 0.0, 1.0,
+            // 0.0,1.0,0.0,
+            // 1.0,1.0,0.0,
+            // 1.0,0.0,0.0
+        ]);
+        //创建顶点缓冲区，存放顶点数据
+        const vertexBuf = device.createBuffer({
+            size: vertexArr.byteLength,//缓冲区大小
+            usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,//缓冲区用途
+        });
+        //将顶点数据写入缓冲区中
+        device.queue.writeBuffer(vertexBuf, 0, vertexArr);
+
+        //设置uniform数据：缩放矩阵,原生写法
+        // const mat4Arr = new Float32Array([
+        //     0.5, 0.0, 0.0, 0.0,
+        //     0.0, 0.5, 0.0, 0.0,
+        //     0.0, 0.0, 0.5, 0.0,
+        //     0.0, 0.0, 0.0, 1.0
+        // ]);
+
+        //设置uniform数据，缩放矩阵，借助数学工具库
+        const mat4Arr = glMatrix.mat4.create();//创建单位矩阵
+
+        //生成平移变换矩阵
+        glMatrix.mat4.translate(mat4Arr, mat4Arr, [0.2, 0.2, 0]);
+
+        //再缩放
+        glMatrix.mat4.scale(mat4Arr, mat4Arr, [0.5, 0.5, 0]);
+        //然后旋转
+        glMatrix.mat4.rotateZ(mat4Arr, mat4Arr, Math.PI/12);
+
+        //创建uniform缓冲区
+        const mat4Buf = device.createBuffer({
+            size: mat4Arr.byteLength,
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,//用于缓存uniform缩放矩阵
+        });
+        //将uniform数据写入缓冲区中
+        device.queue.writeBuffer(mat4Buf, 0, mat4Arr);
+
+        //设置颜色uniform
+        const colorArr = new Float32Array([
+            0.2, 0.9, 1.0, 1.0
+        ]);
+        const colorBuf = device.createBuffer({
+            size: colorArr.byteLength,
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+        });
+        device.queue.writeBuffer(colorBuf, 0, colorArr);
+
+        //创建渲染管线
+        const pipeline = device.createRenderPipeline({
+            layout: 'auto',
+            vertex: {//顶点配置
+                module: device.createShaderModule({ code: vertex }),//加载wgsl代码
+                entryPoint: "main",//指定wgsl代码的入口
+                buffers: [
+                    {
+                        arrayStride: 3 * 4,//一个顶点的字节长度
+                        attributes: [
+                            {
+                                shaderLocation: 0,//
+                                format: 'float32x3',
+                                offset: 0
+                            }
+                        ]
+                    }
+                ]
+            },
+            primitive: {
+                //绘制三角形、线、点、多边形等
+                topology: 'triangle-list'
+            },
+            fragment: {
+                module: device.createShaderModule({ code: fragment }),//加载片元着色器代码
+                entryPoint: 'main',//指定片元代码入口
+                targets: [
+                    {
+                        format
+                    }
+                ]
+            }
+        });
+        //设置uniform数据的绑定组
+        const bindGroup = device.createBindGroup({
+            layout: pipeline.getBindGroupLayout(0),//绑定组
+            entries: [//包含多个uniform数据
+                {
+                    binding: 0,//标记uniform数据
+                    resource: {
+                        buffer: mat4Buf//指定缓冲区源
+                    }
+                },
+                //第二个uniform
+                {
+                    binding: 1,
+                    resource: {
+                        buffer: colorBuf
+                    }
+                }
+            ]
+        });
+        let angle = 0.0;//旋转角度
+        //渲染，动画
+        function render() {
+            angle += 0.02;
+            const modelMatrix = glMatrix.mat4.create();
+            //绕z轴旋转
+            //glMatrix.mat4.rotateZ(modelMatrix,modelMatrix,angle);
+            glMatrix.mat4.scale(modelMatrix,modelMatrix,[0.5,0.5,1.0]);
+            glMatrix.mat4.translate(modelMatrix,modelMatrix,[0.0,0.0,0.5]);
+            //绕y轴旋转
+            glMatrix.mat4.rotateY(modelMatrix,modelMatrix,angle);
+            glMatrix.mat4.rotateX(modelMatrix,modelMatrix,angle);
+            device.queue.writeBuffer(mat4Buf,0,modelMatrix);
+
+            //创建命令编码器控制渲染管线输出像素数据
+            const commandEncoder = device.createCommandEncoder();
+            const renderPass = commandEncoder.beginRenderPass({
+                //渲染通道
+                colorAttachments: [
+                    {
+                        view: context.getCurrentTexture().createView(),
+                        storeOp: 'store',
+                        loadOp: 'clear',
+                        clearValue: { r: 0.8, g: 1.0, b: 0.5, a: 1.0 }//背景色
+                    }
+                ]
+            });
+            //给通道设置渲染管线
+            renderPass.setPipeline(pipeline);
+            //关联0这个位置上的顶点缓冲区
+            renderPass.setVertexBuffer(0, vertexBuf);
+
+            renderPass.setBindGroup(0, bindGroup);
+            renderPass.draw(30);//需要绘制多少个顶点，不能大于顶点数据/3
+            renderPass.end();
+            //通过finish生成一堆gpu指令
+            const commandBuf = commandEncoder.finish();
+            //提交命令，执行命令
+            device.queue.submit([commandBuf]);
+            requestAnimationFrame(render);
+        }
+        render();
+    </script>
+</body>
+
+</html>
