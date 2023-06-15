@@ -27,11 +27,20 @@ const vertex = /* wgsl */`
 `;
 //片元着色器代码
 const fragment = /* wgsl */`
+    //表明从标记为0这个组，绑定值为1的位置取uniform值
     @group(0) @binding(1) var<uniform> color:vec4<f32>;
     @fragment //声明片元着色器
-    fn main() -> @location(0) vec4<f32>{
+    fn main(@builtin(position) fragCoord:vec4<f32>) -> @location(0) vec4<f32>{
         //return vec4<f32>(0.0,0.9,1.0,1.0);//返回片元
-        return color;
+        //根据屏幕坐标改变片元颜色
+        var x:f32 = fragCoord.x;//片元屏幕坐标x
+        var y:f32 = fragCoord.y;//片元屏幕坐标y
+        var z:f32 = fragCoord.z;//==0
+        //return color;
+        //uniform数据即使没有用到也要在着色器代码里读出来，否则报错
+        var c = color;
+        var retColor = vec4<f32>(x/500.0,1.0,y/500.0,1.0);
+        return retColor;
     }
 `;
 export {
