@@ -60,6 +60,14 @@
             1.0, 0.0, 1.0,//右侧2
             0.0, 1.0, 0.0,
             0.0, 1.0, 1.0,
+
+            0.0, 0.0, 0.0,//底面1
+            0.0, 0.0, 1.0,
+            1.0, 0.0, 0.0,
+
+            1.0, 0.0, 0.0,//底面2
+            1.0, 0.0, 1.0,
+            0.0, 0.0, 1.0,
             // 0.0,1.0,0.0,
             // 1.0,1.0,0.0,
             // 1.0,0.0,0.0
@@ -194,7 +202,7 @@
             renderPass.setVertexBuffer(0, vertexBuf);
 
             renderPass.setBindGroup(0, bindGroup);
-            renderPass.draw(24);//需要绘制多少个顶点，不能大于顶点数据/3
+            renderPass.draw(30);//需要绘制多少个顶点，不能大于顶点数据/3
             renderPass.end();
             //通过finish生成一堆gpu指令
             const commandBuf = commandEncoder.finish();
