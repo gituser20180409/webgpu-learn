@@ -20,6 +20,7 @@ const vertex = /* wgsl */`
         // 0 1 0 0.5
         // 0 0 1 0.5
         // 0 0 0 1
+
         var t = mat4x4<f32>(1,0,0,0, 0,1,0,0, 0,0,1,0, -1,-1,0,1);
         //return t * s * pos2;//先缩放，在平移
         return S * pos2;//返回顶点数据给渲染管线的下一个环节用
@@ -40,7 +41,10 @@ const fragment = /* wgsl */`
         //uniform数据即使没有用到也要在着色器代码里读出来，否则报错
         var c = color;
         var retColor = vec4<f32>(x/500.0,1.0,y/500.0,1.0);
-        return retColor;
+        if(x < 370.0){//屏幕x坐标
+            return vec4<f32>(1.0,1.0,0.0,1.0);
+        }
+        return vec4<f32>(0.0,1.0,1.0,1.0);
     }
 `;
 export {
