@@ -52,6 +52,14 @@
             0.0, 0.0, 1.0,//背面
             1.0, 0.0, 1.0,
             0.0, 1.0, 1.0,
+
+            0.0, 1.0, 0.0,//右侧1
+            1.0, 0.0, 0.0,
+            1.0, 0.0, 1.0,
+
+            1.0, 0.0, 1.0,//右侧2
+            0.0, 1.0, 0.0,
+            0.0, 1.0, 1.0,
             // 0.0,1.0,0.0,
             // 1.0,1.0,0.0,
             // 1.0,0.0,0.0
@@ -164,7 +172,7 @@
             glMatrix.mat4.translate(modelMatrix,modelMatrix,[0.0,0.0,0.5]);
             //绕y轴旋转
             glMatrix.mat4.rotateY(modelMatrix,modelMatrix,angle);
-            //glMatrix.mat4.rotateX(modelMatrix,modelMatrix,angle);
+            glMatrix.mat4.rotateX(modelMatrix,modelMatrix,angle);
             device.queue.writeBuffer(mat4Buf,0,modelMatrix);
 
             //创建命令编码器控制渲染管线输出像素数据
@@ -186,7 +194,7 @@
             renderPass.setVertexBuffer(0, vertexBuf);
 
             renderPass.setBindGroup(0, bindGroup);
-            renderPass.draw(18);//需要绘制多少个顶点，不能大于顶点数据/3
+            renderPass.draw(24);//需要绘制多少个顶点，不能大于顶点数据/3
             renderPass.end();
             //通过finish生成一堆gpu指令
             const commandBuf = commandEncoder.finish();
